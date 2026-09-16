@@ -1,0 +1,245 @@
+{
+  "name": "ChatBot plus googlesheet",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        -32
+      ],
+      "id": "6521f1e4-e1ca-4a0c-90e3-6a853a22aac7",
+      "name": "When chat message received",
+      "webhookId": "44f1716b-6b2f-47f6-9226-2e5cd1a770d1"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "#Role \nYou are an AI sports journalist who will give me the best players lists when I ask\n\n#Instruction\n\n- You will only give me the Items in the List not the additional information\n- The output will look like this\nExample:\n{\n \"user_message\": \"...\",\n \"ai_response\": \"...\",\n \"timestamp\": \"...\"\n}\n\n#Strict \n\nAfter answering the user, call the Google Sheets tool to store:\n- user_message\n- ai_response\n- timestamp\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        208,
+        -32
+      ],
+      "id": "a0254905-2c94-4bab-8f1a-bdb582e6ddf7",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        80,
+        176
+      ],
+      "id": "b5ef71e1-dfde-4484-b289-3df330701c05",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "JQLsddtx1VhME1uM",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        304,
+        192
+      ],
+      "id": "01cd1f40-cb7f-40bd-b7f9-30f97cd1cc76",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1qRiR-A7p6R24LF7dKIxMLNmidFBNtAxfSzH6CkYsAdk",
+          "mode": "list",
+          "cachedResultName": "Ai-Agent",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1qRiR-A7p6R24LF7dKIxMLNmidFBNtAxfSzH6CkYsAdk/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1qRiR-A7p6R24LF7dKIxMLNmidFBNtAxfSzH6CkYsAdk/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "user_message": "={{$json.user_message}}",
+            "ai_response": "={{$json.ai_response}}",
+            "timestamp": "={{$json.timestamp}}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "user_message",
+              "displayName": "user_message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ai_response",
+              "displayName": "ai_response",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "timestamp",
+              "displayName": "timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        816,
+        -64
+      ],
+      "id": "2df2b09f-f3cb-44cd-8c6b-70ab27495d37",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "eYfJdMdCvoxdYp0v",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "366e8c73-de68-4735-98c7-cd6529c1e380",
+              "name": "user_message",
+              "value": "={{ JSON.parse($json.output.match(/\\{[\\s\\S]*\\}/)[0]).user_message }}",
+              "type": "string"
+            },
+            {
+              "id": "b932fac3-ff6d-491f-975a-1c6ec7aedeca",
+              "name": "ai_response",
+              "value": "={{ JSON.parse($json.output.match(/\\{[\\s\\S]*\\}/)[0]).ai_response }}",
+              "type": "string"
+            },
+            {
+              "id": "04a9e8f2-f323-4ef2-850d-3bfba3d24aca",
+              "name": "timestamp",
+              "value": "={{ JSON.parse($json.output.match(/\\{[\\s\\S]*\\}/)[0]).timestamp }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        560,
+        -32
+      ],
+      "id": "3278caca-ecd3-46d3-ad80-a503b3785308",
+      "name": "Edit Fields"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "a72edc24-8920-4839-9839-34fac0dc14df",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f537cc936823fc725f95f33bab9427db1e86e806821e23f76370847f724681c0"
+  },
+  "id": "PU1maKMnQpBVgESY",
+  "tags": []
+}
